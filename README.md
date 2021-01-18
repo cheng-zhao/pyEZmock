@@ -24,10 +24,10 @@ The dependencies of this package are as follows:
 -   [Matplotlib](https://matplotlib.org/) [*optional*]
 -   EZmock<sup>[**](#note2)</sup>
 -   [powspec](https://github.com/cheng-zhao/powspec) [*optional*]
--    [FCFC](https://github.com/cheng-zhao/FCFC) [*optional*]
--    bispec<sup>[***](#note2)</sup> [*optional*]
+-   [FCFC](https://github.com/cheng-zhao/FCFC) [*optional*]
+-   bispec<sup>[***](#note2)</sup> [*optional*]
 
-<span id="note2">**: can be obtained on reasonable request to Chia-Hsun Chuang (chuangch [at] <span>stanford</span>.edu ).</span>
+<span id="note2">**: can be obtained on reasonable request to Chia-Hsun Chuang (chuangch [at] <span>stanford</span>.edu).</span>
 
 <span id="note3">***: can be obtained on reasonable request to [Cheng Zhao](mailto:zhaocheng03@gmail.com).</span>
 
