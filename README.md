@@ -10,7 +10,7 @@ This package is written by Cheng Zhao (赵成), and is distributed under the [MI
 
 If you use this tool in research that results in publications, please cite the following papers:
 
-> Chuang et al., 2015, [MNRAS, 446, 2621](https://ui.adsabs.harvard.edu/abs/2015MNRAS.446.2621C/abstract)
+> Chuang et al., 2015, [MNRAS, 446, 2621](https://ui.adsabs.harvard.edu/abs/2015MNRAS.446.2621C/abstract)<br />
 > Zhao et al. 2020, [arXiv:2007.08997](https://ui.adsabs.harvard.edu/abs/2020arXiv200708997Z/abstract)
 
 <span id="note1">*: to be appeared on github soon.</span>
@@ -37,7 +37,7 @@ Please refer to the example [notebook](example_pyez.ipynb).
 
 ## Acknowledgements
 
-This package is inspired by Tony Zhang (@neutrinonerd3333)'s work, and I thank Dr. Chia-Hsun Chuang for his supports and suggestions.
+This package is inspired by [Tony Zhang](https://github.com/neutrinonerd3333)'s work, and I thank Dr. Chia-Hsun Chuang for his supports and suggestions.
 
 ## References
 
