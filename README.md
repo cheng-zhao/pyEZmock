@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This is a python wrapper of the *Effective Zel'dovich approximation mock generator*<sup>[\[1\]](#ref1)</sup> (EZmock), as well as the clustering measurement codes [powspec](https://github.com/cheng-zhao/powspec), [FCFC](https://github.com/cheng-zhao/powspec), and bispec<sup>[*](#note1)</sup>.
+This is a python wrapper of the *Effective Zel'dovich approximation mock generator*<sup>[\[1\]](#ref1)</sup> (EZmock), as well as the clustering measurement codes [powspec](https://github.com/cheng-zhao/powspec), [FCFC](https://github.com/cheng-zhao/FCFC), and bispec<sup>[*](#note1)</sup>.
 
 It creates bash scripts for running EZmocks and measuring clustering statistics, and submits them to the [Slurm workload manager](https://slurm.schedmd.com/documentation.html) if necessary. It is designed for the *National Energy Research Scientific Computing Center* ([NERSC](https://www.nersc.gov/)), but can be in principle used in any computing environment, provided the dependencies are given.
 
