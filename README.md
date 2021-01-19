@@ -1,5 +1,7 @@
 # pyEZmock
 
+![GitHub](https://img.shields.io/github/license/cheng-zhao/pyEZmock.svg)
+
 ## Introduction
 
 This is a python wrapper of the *Effective Zel'dovich approximation mock generator*<sup>[\[1\]](#ref1)</sup> (EZmock), as well as the clustering measurement codes [powspec](https://github.com/cheng-zhao/powspec), [FCFC](https://github.com/cheng-zhao/FCFC), and bispec<sup>[*](#note1)</sup>.
@@ -20,12 +22,12 @@ If you use this tool in research that results in publications, please cite the f
 The dependencies of this package are as follows:
 
 -   [Python3](https://www.python.org/)  (>= 3.6)
--   [NumPy](https://numpy.org/) [*optional*]
--   [Matplotlib](https://matplotlib.org/) [*optional*]
+-   [NumPy](https://numpy.org/) \[*optional*\]
+-   [Matplotlib](https://matplotlib.org/) \[*optional*\]
 -   EZmock<sup>[**](#note2)</sup>
--   [powspec](https://github.com/cheng-zhao/powspec) [*optional*]
--   [FCFC](https://github.com/cheng-zhao/FCFC) [*optional*]
--   bispec<sup>[***](#note2)</sup> [*optional*]
+-   [powspec](https://github.com/cheng-zhao/powspec) \[*optional*\]
+-   [FCFC](https://github.com/cheng-zhao/FCFC) \[*optional*\]
+-   bispec<sup>[***](#note2)</sup> \[*optional*\]
 
 They are all available on NERSC, and linked to this package by default.
 

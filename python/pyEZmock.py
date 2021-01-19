@@ -37,6 +37,20 @@ class pyEZmock:
       pk_exe='/global/u2/z/zhaoc/work/pyEZmock/bin/POWSPEC.sh',
       xi_exe='/global/u2/z/zhaoc/work/pyEZmock/bin/FCFC_2PT_BOX.sh',
       bk_exe='/global/u2/z/zhaoc/work/pyEZmock/bin/BISPEC_BOX.sh'):
+    """
+    Initialise the `pyEZmock` class.
+
+    Parameters
+    ----------
+    exe: str, optional
+        Location of the EZmock executable.
+    pk_exe: str, optional
+        Location of the powspec executable.
+    xi_exe: str, optional
+        Location of the FCFC executable for periodic boxes.
+    bk_exe: str, optional
+        Location of the bispec executable.
+    """
     if workdir is None:
       raise ValueError('Working directory should be set via `workdir`.')
     if not os.path.isdir(workdir):
@@ -358,7 +372,7 @@ class pyEZmock:
     if self.__xi: jobstr += self.__xi_cmd()
     if self.__bk: jobstr += self.__bk_cmd()
 
-    jobstr += f'echo 1 > DONE\n'
+    jobstr += 'echo 1 > DONE\n'
 
     # Save the job script and submit it if applicable
     with open(self.__script, 'w') as f: f.write(jobstr)
@@ -409,7 +423,7 @@ class pyEZmock:
     nrow = int(np.ceil(nplot / ncol))
     figw = min(15, nplot * 5)
     figh = 3 * nrow
-    fig = plt.figure(figsize=(figw,figh))
+    plt.figure(figsize=(figw,figh))
     plt.subplots_adjust(wspace=0.3, hspace=0.3)
     ax = [plt.subplot2grid((nrow,ncol), (i//ncol,i%ncol)) for i in range(nplot)]
     for a in ax: a.grid(ls=':', c='dimgray', alpha=0.6)
@@ -744,7 +758,6 @@ class pyEZmock:
     ifile = self.__ezfile
     if not bname is None: ifile = f'EZmock_{bname}_RSD.dat'
     ofile = f'PK_{ifile}'
-    pos = f'[($1+{bsize:g})%{bsize:g},($2+{bsize:g})%{bsize:g},($3+{bsize:g})%{bsize:g}]'
 
     jobstr = (f'{self.pk_exe} -d {ifile} --data-formatter "%lf %lf %lf" '
         f"-p '[($1+{bsize:g})%{bsize:g},($2+{bsize:g})%{bsize:g},"
