@@ -31,6 +31,8 @@ import numpy as np
 from scipy.special import hyp2f1
 from scipy.misc import derivative
 
+# Structure growth for flat LambdaCDM cosmology.
+# ref: https://arxiv.org/abs/0906.1643
 class flatLCDM:
   def __init__(self, omega_m=0.31):
     self.Om = float(omega_m)

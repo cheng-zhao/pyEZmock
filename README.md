@@ -27,17 +27,19 @@ The dependencies of this package are as follows:
 -   [FCFC](https://github.com/cheng-zhao/FCFC) [*optional*]
 -   bispec<sup>[***](#note2)</sup> [*optional*]
 
-<span id="note2">**: can be obtained on reasonable request to Chia-Hsun Chuang (chuangch [at] <span>stanford</span>.edu).</span>
+They are all available on NERSC, and linked to this package by default.
 
-<span id="note3">***: can be obtained on reasonable request to [Cheng Zhao](mailto:zhaocheng03@gmail.com).</span>
+<span id="note2">**: can be obtained on request to Chia-Hsun Chuang (chuangch [at] <span>stanford</span>.edu).</span>
 
-## Example usage
+<span id="note3">***: can be obtained on request to [Cheng Zhao](mailto:zhaocheng03@gmail.com).</span>
+
+## Usage
 
 Please refer to the example [notebook](example_pyez.ipynb).
 
 ## Acknowledgements
 
-This package is inspired by [Tony Zhang](https://github.com/neutrinonerd3333)'s work, and I thank Dr. Chia-Hsun Chuang for his supports and suggestions.
+This package is inspired by [Tony Zhang's work](https://github.com/neutrinonerd3333/ezmock), and I thank Dr. Chia-Hsun Chuang for his supports and suggestions.
 
 ## References
 

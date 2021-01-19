@@ -39,24 +39,29 @@ class pyEZmock:
       bk_exe='/global/u2/z/zhaoc/work/pyEZmock/bin/BISPEC_BOX.sh'):
     if workdir is None:
       raise ValueError('Working directory should be set via `workdir`.')
-    if not (os.path.isfile(exe) and os.access(exe, os.X_OK)):
-      raise IOError(f'Invalid EZmock executable: {exe}')
-    if not (os.path.isfile(pk_exe) and os.access(pk_exe, os.X_OK)):
-      raise IOError(f'Invalid power spectrum executable: {exe}')
-    if not (os.path.isfile(xi_exe) and os.access(xi_exe, os.X_OK)):
-      raise IOError(f'Invalid 2PCF executable: {exe}')
-    if not (os.path.isfile(bk_exe) and os.access(bk_exe, os.X_OK)):
-      raise IOError(f'Invalid bispectrum executable: {exe}')
-
     if not os.path.isdir(workdir):
       try: os.mkdir(workdir)
       except: raise IOError(f'Cannot create working directory: {workdir}')
-
     self.workdir = os.path.abspath(workdir)
-    self.ez_exe = exe
-    self.pk_exe = pk_exe
-    self.xi_exe = xi_exe
-    self.bk_exe = bk_exe
+
+    if not (os.path.isfile(exe) and os.access(exe, os.X_OK)):
+      raise IOError(f'Invalid EZmock executable: {exe}')
+    self.ez_exe = os.path.abspath(exe)
+
+    if not (os.path.isfile(pk_exe) and os.access(pk_exe, os.X_OK)):
+      warn(f'Invalid power spectrum executable: {exe}')
+      self.pk_exe = None
+    else: self.pk_exe = os.path.abspath(pk_exe)
+
+    if not (os.path.isfile(xi_exe) and os.access(xi_exe, os.X_OK)):
+      warn(f'Invalid 2PCF executable: {exe}')
+      self.xi_exe = None
+    else: self.xi_exe = os.path.abspath(xi_exe)
+
+    if not (os.path.isfile(bk_exe) and os.access(bk_exe, os.X_OK)):
+      warn(f'Invalid bispectrum executable: {exe}')
+      self.bk_exe = None
+    else: self.bk_exe = os.path.abspath(bk_exe)
 
     # Initialise EZmock parameters
     self.__param = dict(
@@ -148,9 +153,12 @@ class pyEZmock:
     if not rand_motion is None: self.__param['rand_motion'] = float(rand_motion)
     if not dens_cut is None: self.__param['dens_cut'] = float(dens_cut)
     self.__param['seed'] = int(seed)
-    if (not init_pk is None) and (not os.path.isfile(init_pk)):
-      raise IOError(f'init_pk does not exist: {init_pk}')
-    self.__param['init_pk'] = init_pk
+
+    if not init_pk is None: self.__param['init_pk'] = init_pk
+    if not os.path.isfile(self.__param['init_pk']):
+      raise IOError(f"init_pk does not exist: {self.__param['init_pk']}")
+    self.__param['init_pk'] = os.path.abspath(self.__param['init_pk'])
+
     self.__param['omega_m'] = float(omega_m)
     if self.__param['omega_m'] <= 0 or self.__param['omega_m'] > 1:
       raise ValueError('omega_m must be between 0 and 1')
@@ -210,6 +218,8 @@ class pyEZmock:
         Column of the reference bispectrum.
     """
     self.__pk = pk
+    if self.__pk and self.pk_exe is None:
+      raise ValueError('pk_exe must be available if computing power spectrum')
     if self.__pk and len(pk_ell) == 0: raise ValueError('pk_ell is empty')
     self.__pkl = pk_ell
     self.__pkgrid = pk_grid
@@ -223,6 +233,8 @@ class pyEZmock:
     self.__pk_col = pk_ref_col
 
     self.__xi = xi
+    if self.__xi and self.xi_exe is None:
+      raise ValueError('xi_exe must be available if computing 2PCF')
     if self.__xi and len(xi_ell) == 0: raise ValueError('xi_ell is empty')
     self.__xil = xi_ell
     self.__rmax = xi_rmax
@@ -235,6 +247,8 @@ class pyEZmock:
     self.__xi_col = xi_ref_col
 
     self.__bk = bk
+    if self.__bk and self.bk_exe is None:
+      raise ValueError('bk_exe must be available if computing bispectrum')
     self.__bkgrid = bk_grid
     self.__k1 = bk_k1
     self.__k2 = bk_k2
@@ -703,9 +717,10 @@ class pyEZmock:
       bsize = params['boxsize']
       # Check boundaries and remove non-numerical entries (such as nan)
       jobstr += ("awk '{CONVFMT=\"%.8g\";OFMT=\"%.8g\"; "
+          "if ($3+0==$3 && $6+0==$6) { "
+          f"z=($3+$6*{z1:g}/{hubble:.8g}+{bsize:g})%{bsize:g}; "
           f"if ($1>=0 && $1<{bsize:g} && $2>=0 && $2<{bsize:g}"
-          f" && $3>=0 && $3<{bsize:g} && $6+0==$6) print $1,$2,"
-          f"($3+$6*{z1:g}/{hubble:.8g}+{bsize:g})%{bsize:g} }}' "
+          f" && z>=0 && z<{bsize:g}) print $1,$2,z; }} }} ' "
           f"EZmock_{bname}.dat > EZmock_{bname}_RSD.dat || exit\n\n")
 
     return jobstr
@@ -729,11 +744,13 @@ class pyEZmock:
     ifile = self.__ezfile
     if not bname is None: ifile = f'EZmock_{bname}_RSD.dat'
     ofile = f'PK_{ifile}'
+    pos = f'[($1+{bsize:g})%{bsize:g},($2+{bsize:g})%{bsize:g},($3+{bsize:g})%{bsize:g}]'
 
     jobstr = (f'{self.pk_exe} -d {ifile} --data-formatter "%lf %lf %lf" '
-        f"-p '[$1,$2,$3]' -s T -B {bsize:g} -G {self.__pkgrid:d} -n 1 -i F "
-        f"-l '{poles}' -k 0 -K {self.__kmax:g} -b {self.__dk:g} -a {ofile} || "
-        "exit\n\n")
+        f"-p '[($1+{bsize:g})%{bsize:g},($2+{bsize:g})%{bsize:g},"
+        f"($3+{bsize:g})%{bsize:g}]' -s T -B {bsize:g} -G {self.__pkgrid:d} "
+        f"-n 1 -i F -l '{poles}' -k 0 -K {self.__kmax:g} -b {self.__dk:g} "
+        f"-a {ofile} || exit\n\n")
 
     return jobstr
 
@@ -783,8 +800,9 @@ class pyEZmock:
     if not bname is None: ifile = f'EZmock_{bname}_RSD.dat'
     ofile = f'BK_{ifile}'
 
-    jobstr = (f'{self.bk_exe} -i {ifile} -b 0 -B {bsize:g} '
-        f'-g {self.__bkgrid:d} -w 1 -x 0 -p {self.__k1[0]:g} '
+    jobstr = (f'{self.bk_exe} -i {ifile} -s 7 --x-min 0 --y-min 0 --z-min 0 '
+        f'--x-max {bsize:g} --y-max {bsize:g} --z-max {bsize:g} -b 0'
+        f' -B {bsize:g} -g {self.__bkgrid:d} -w 1 -x 0 -p {self.__k1[0]:g} '
         f'-P {self.__k1[1]:g} -q {self.__k2[0]:g} -Q {self.__k2[1]:g} '
         f'-n {self.__bkbin:d} -o {ofile} -y || exit\n\n')
 
