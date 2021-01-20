@@ -32,7 +32,7 @@ from warnings import warn
 
 class pyEZmock:
 
-  def __init__(self, workdir=None,
+  def __init__(self, workdir, restore=False,
       exe='/global/u2/z/zhaoc/work/pyEZmock/bin/EZmock.sh',
       pk_exe='/global/u2/z/zhaoc/work/pyEZmock/bin/POWSPEC.sh',
       xi_exe='/global/u2/z/zhaoc/work/pyEZmock/bin/FCFC_2PT_BOX.sh',
@@ -42,6 +42,10 @@ class pyEZmock:
 
     Parameters
     ----------
+    workdir: str
+        Working directory for generating EZmocks.
+    restore: bool, optional
+        Indicate whether to scan `workdir` and restore previous runs.
     exe: str, optional
         Location of the EZmock executable.
     pk_exe: str, optional
@@ -51,6 +55,8 @@ class pyEZmock:
     bk_exe: str, optional
         Location of the bispec executable.
     """
+    from glob import glob
+
     if workdir is None:
       raise ValueError('Working directory should be set via `workdir`.')
     if not os.path.isdir(workdir):
@@ -121,6 +127,15 @@ class pyEZmock:
     self.__odir = None          # output directory for the current run
     self.__script = None        # script for the current run
     self.__ezfile = None        # EZmock catalogue with RSD for the current run
+
+    # Load previous runs as histories
+    if restore:
+      paths = glob(f'{workdir}/B*G*Z*N*_b*d*r*c*_seed*')
+      for p in paths:
+        if os.path.isfile(f'{p}/DONE'):
+          bname = p.split('/')[-1]
+          par = self.__get_param_from_bname(bname)
+          if not par is None: self.__history.append(par)
 
 
   def set_param(self, boxsize, num_grid, redshift, num_tracer,
@@ -234,7 +249,10 @@ class pyEZmock:
     self.__pk = pk
     if self.__pk and self.pk_exe is None:
       raise ValueError('pk_exe must be available if computing power spectrum')
-    if self.__pk and len(pk_ell) == 0: raise ValueError('pk_ell is empty')
+    if self.__pk:
+      try:
+        if len(pk_ell) == 0: raise ValueError('pk_ell is empty')
+      except TypeError: pk_ell = [pk_ell]
     self.__pkl = pk_ell
     self.__pkgrid = pk_grid
     self.__kmax = pk_kmax
@@ -249,7 +267,10 @@ class pyEZmock:
     self.__xi = xi
     if self.__xi and self.xi_exe is None:
       raise ValueError('xi_exe must be available if computing 2PCF')
-    if self.__xi and len(xi_ell) == 0: raise ValueError('xi_ell is empty')
+    if self.__xi:
+      try:
+        if len(xi_ell) == 0: raise ValueError('xi_ell is empty')
+      except TypeError: xi_ell = [xi_ell]
     self.__xil = xi_ell
     self.__rmax = xi_rmax
     self.__dr = xi_dr
@@ -439,22 +460,25 @@ class pyEZmock:
       for j, hist in enumerate(self.__history):
         bname = self.__get_bname(hist)
         ifile = f'{self.workdir}/{bname}/PK_EZmock_{bname}_RSD.dat'
-        d = np.loadtxt(ifile, unpack=True)
-        for i, ell in enumerate(self.__pkl):
-          ax[iplot+i].plot(d[0], d[5+i]*d[0]**1.5, alpha=alpha_hist,
-              label=f'history {j:d}')
+        if os.path.isfile(ifile):
+          d = np.loadtxt(ifile, unpack=True)
+          for i, ell in enumerate(self.__pkl):
+            ax[iplot+i].plot(d[0], d[5+i]*d[0]**1.5, alpha=alpha_hist,
+                label=f'history {j:d}')
       # Plot the reference
       if not self.__pk_ref is None:
         d = np.loadtxt(self.__pk_ref, unpack=True)
         for i, c in enumerate(self.__pk_col):
           ax[iplot+i].plot(d[0], d[c]*d[0]**1.5, ls_ref, label='ref')
       # Plot the current results
-      ifile = f'{self.__odir}/PK_{self.__ezfile}'
-      if os.path.isfile(ifile):
-        d = np.loadtxt(ifile, unpack=True)
-        for i, ell in enumerate(self.__pkl):
-          ax[iplot+i].plot(d[0], d[5+i]*d[0]**1.5, ls_curr, label='current')
-      else: warn('the current job may not have been finished')
+      if not None in self.__param.values():
+        ifile = f'{self.__odir}/PK_{self.__ezfile}'
+        if os.path.isfile(ifile):
+          d = np.loadtxt(ifile, unpack=True)
+          for i, ell in enumerate(self.__pkl):
+            ax[iplot+i].plot(d[0], d[5+i]*d[0]**1.5, ls_curr, label='current')
+        else: warn('the current job may not have been finished')
+      else: warn('the current job may not have been initialised')
       # Set axis labels and ranges
       for i, ell in enumerate(self.__pkl):
         ax[iplot+i].set_xlabel(r'$k$')
@@ -468,22 +492,25 @@ class pyEZmock:
       for j, hist in enumerate(self.__history):
         bname = self.__get_bname(hist)
         ifile = f'{self.workdir}/{bname}/2PCF_EZmock_{bname}_RSD.dat'
-        d = np.loadtxt(ifile, unpack=True)
-        for i, ell in enumerate(self.__xil):
-          ax[iplot+i].plot(d[0], d[3+i]*d[0]**2, alpha=alpha_hist,
-              label=f'history {j:d}')
+        if os.path.isfile(ifile):
+          d = np.loadtxt(ifile, unpack=True)
+          for i, ell in enumerate(self.__xil):
+            ax[iplot+i].plot(d[0], d[3+i]*d[0]**2, alpha=alpha_hist,
+                label=f'history {j:d}')
       # Plot the reference
       if not self.__xi_ref is None:
         d = np.loadtxt(self.__xi_ref, unpack=True)
         for i, c in enumerate(self.__xi_col):
           ax[iplot+i].plot(d[0], d[c]*d[0]**2, ls_ref, label='ref')
       # Plot the current results
-      ifile = f'{self.__odir}/2PCF_{self.__ezfile}'
-      if os.path.isfile(ifile):
-        d = np.loadtxt(ifile, unpack=True)
-        for i, ell in enumerate(self.__xil):
-          ax[iplot+i].plot(d[0], d[3+i]*d[0]**2, ls_curr, label='current')
-      else: warn('the current job may not have been finished')
+      if not None in self.__param.values():
+        ifile = f'{self.__odir}/2PCF_{self.__ezfile}'
+        if os.path.isfile(ifile):
+          d = np.loadtxt(ifile, unpack=True)
+          for i, ell in enumerate(self.__xil):
+            ax[iplot+i].plot(d[0], d[3+i]*d[0]**2, ls_curr, label='current')
+        else: warn('the current job may not have been finished')
+      else: warn('the current job may not have been initialised')
       # Set axis labels and ranges
       for i, ell in enumerate(self.__xil):
         ax[iplot+i].set_xlabel(r'$s$')
@@ -496,19 +523,22 @@ class pyEZmock:
       for j, hist in enumerate(self.__history):
         bname = self.__get_bname(hist)
         ifile = f'{self.workdir}/{bname}/BK_EZmock_{bname}_RSD.dat'
-        d = np.loadtxt(ifile, unpack=True)
-        ax[iplot].plot(d[0]/np.pi, d[4], alpha=alpha_hist,
-            label=f'history {j:d}')
+        if os.path.isfile(ifile):
+          d = np.loadtxt(ifile, unpack=True)
+          ax[iplot].plot(d[0]/np.pi, d[4], alpha=alpha_hist,
+              label=f'history {j:d}')
       # Plot the reference
       if not self.__bk_ref is None:
         d = np.loadtxt(self.__bk_ref, unpack=True)
         ax[iplot].plot(d[0]/np.pi, d[4], ls_ref, label='ref')
       # Plot the current results
-      ifile = f'{self.__odir}/BK_{self.__ezfile}'
-      if os.path.isfile(ifile):
-        d = np.loadtxt(ifile, unpack=True)
-        ax[iplot].plot(d[0]/np.pi, d[4], ls_curr, label='current')
-      else: warn('the current job may not have been finished')
+      if not None in self.__param.values():
+        ifile = f'{self.__odir}/BK_{self.__ezfile}'
+        if os.path.isfile(ifile):
+          d = np.loadtxt(ifile, unpack=True)
+          ax[iplot].plot(d[0]/np.pi, d[4], ls_curr, label='current')
+        else: warn('the current job may not have been finished')
+      else: warn('the current job may not have been initialised')
       # Set axis labels
       ax[iplot].set_xlabel(r'$\theta_{12} / \pi$')
       ax[iplot].set_ylabel(r'$B (\theta_{12})$')
@@ -659,7 +689,6 @@ class pyEZmock:
     ------
     The basename as a string.
     """
-    if None in param.values(): return None
     bname = (f"B{param['boxsize']:g}"
         f"G{param['num_grid']:d}"
         f"Z{param['redshift']:g}"
@@ -670,6 +699,43 @@ class pyEZmock:
         f"c{param['dens_cut']:g}_"
         f"seed{param['seed']:d}")
     return bname
+
+
+  def __get_param_from_bname(self, bname):
+    """
+    Retrieve parameter values from the basename.
+
+    Parameters
+    ----------
+    bname: str
+        The basename.
+
+    Return
+    ------
+    The parameter set as a dictionary.
+    """
+    from re import fullmatch
+    num = r'([-+.eE\d]+)'
+    regex=f'B{num}G{num}Z{num}N{num}_b{num}d{num}r{num}c{num}_seed{num}'
+    m = fullmatch(regex, bname)
+    if m is None: return None
+    g = m.groups()
+    if len(g) != 9: return None
+    param = dict(
+        boxsize = float(g[0]),
+        num_grid = int(g[1]),
+        redshift = float(g[2]),
+        num_tracer = int(g[3]),
+        pdf_base = float(g[4]),
+        dens_scat = float(g[5]),
+        rand_motion = float(g[6]),
+        dens_cut = float(g[7]),
+        seed = int(g[8]),
+        omega_m = None,
+        init_pk = None
+    )
+    return param
+
 
 
   def __mock_cmd(self, bname, rsd=True, params=None):

@@ -21,7 +21,7 @@ If you use this tool in research that results in publications, please cite the f
 
 The dependencies of this package are as follows:
 
--   [Python3](https://www.python.org/)  (>= 3.6)
+-   [Python3](https://www.python.org/)  (>= 3.7)
 -   [NumPy](https://numpy.org/) \[*optional*\]
 -   [Matplotlib](https://matplotlib.org/) \[*optional*\]
 -   EZmock<sup>[**](#note2)</sup>
@@ -31,7 +31,7 @@ The dependencies of this package are as follows:
 
 They are all available on NERSC, and linked to this package by default.
 
-<span id="note2">**: can be obtained on request to Chia-Hsun Chuang (chuangch [at] <span>stanford</span>.edu).</span>
+<span id="note2">**: can be obtained on request to Chia-Hsun Chuang (chuangch \[at\] <span>stanford</span>.edu).</span>
 
 <span id="note3">***: can be obtained on request to [Cheng Zhao](mailto:zhaocheng03@gmail.com).</span>
 
