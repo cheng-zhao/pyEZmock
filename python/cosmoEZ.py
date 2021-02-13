@@ -40,8 +40,8 @@ class flatLCDM:
   def delta(self, a):
     return a * hyp2f1(1./3., 1, 11./6., a**3 * (1-1./self.Om))
 
-  def growth2z0(self, a):
-    return (self.delta(a) / self.delta(1))**2
+  def growth2(self, a, a_init=1):
+    return (self.delta(a) / self.delta(a_init))**2
 
   def growthf(self, a):
     derv = derivative(self.delta, a, dx=1e-3)

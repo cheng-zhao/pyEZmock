@@ -69,17 +69,17 @@ class pyEZmock:
     self.ez_exe = os.path.abspath(exe)
 
     if not (os.path.isfile(pk_exe) and os.access(pk_exe, os.X_OK)):
-      warn(f'Invalid power spectrum executable: {exe}')
+      warn(f'Invalid power spectrum executable: {pk_exe}')
       self.pk_exe = None
     else: self.pk_exe = os.path.abspath(pk_exe)
 
     if not (os.path.isfile(xi_exe) and os.access(xi_exe, os.X_OK)):
-      warn(f'Invalid 2PCF executable: {exe}')
+      warn(f'Invalid 2PCF executable: {xi_exe}')
       self.xi_exe = None
     else: self.xi_exe = os.path.abspath(xi_exe)
 
     if not (os.path.isfile(bk_exe) and os.access(bk_exe, os.X_OK)):
-      warn(f'Invalid bispectrum executable: {exe}')
+      warn(f'Invalid bispectrum executable: {bk_exe}')
       self.bk_exe = None
     else: self.bk_exe = os.path.abspath(bk_exe)
 
@@ -95,6 +95,7 @@ class pyEZmock:
       dens_cut = None,
       seed = 1,
       omega_m = 0.307115,
+      z_init = 0,
       init_pk = '/global/u2/z/zhaoc/work/pyEZmock/data/PlanckDM.linear.pk'
     )
 
@@ -140,7 +141,7 @@ class pyEZmock:
 
   def set_param(self, boxsize, num_grid, redshift, num_tracer,
       pdf_base=None, dens_scat=None, rand_motion=None, dens_cut=None,
-      seed=1, omega_m=0.307115,
+      seed=1, omega_m=0.307115, z_init=0,
       init_pk='/global/u2/z/zhaoc/work/pyEZmock/data/PlanckDM.linear.pk'):
     """
     Set parameters for EZmock evaluation.
@@ -167,6 +168,8 @@ class pyEZmock:
         Random seed.
     omega_m: float, optional
         Density parameter at z = 0.
+    z_init: float, optional
+        Redshift of the initial power spectrum.
     init_pk: str, optional
         Initial power spectrum.
     Reference
@@ -191,6 +194,9 @@ class pyEZmock:
     self.__param['omega_m'] = float(omega_m)
     if self.__param['omega_m'] <= 0 or self.__param['omega_m'] > 1:
       raise ValueError('omega_m must be between 0 and 1')
+    self.__param['z_init'] = float(z_init)
+    if self.__param['z_init'] < 0:
+      raise ValueError('z_init must be non-negative')
 
 
   def set_clustering(self, pk=False, pk_ell=[0,2], pk_grid=256, pk_kmax=0.3,
@@ -297,7 +303,7 @@ class pyEZmock:
   def run(self, nthreads, queue=None, walltime=30, partition='haswell',
       boxsize=None, num_grid=None, redshift=None, num_tracer=None,
       pdf_base=None, dens_scat=None, rand_motion=None, dens_cut=None,
-      seed=None, omega_m=None, init_pk=None):
+      seed=None, omega_m=None, z_init=None, init_pk=None):
     """
     Run the job for EZmock generation and clustering measurements.
 
@@ -344,6 +350,10 @@ class pyEZmock:
       self.__param['omega_m'] = float(omega_m)
       if self.__param['omega_m'] <= 0 or self.__param['omega_m'] > 1:
         raise ValueError('omega_m must be between 0 and 1')
+    if not z_init is None:
+      self.__param['z_init'] = float(z_init)
+      if self.__param['z_init'] < 0:
+        raise ValueError('z_init must be non-negative')
     if not init_pk is None:
       if not os.path.isfile(init_pk):
         raise IOError(f'init_pk does not exist: {init_pk}')
@@ -763,7 +773,8 @@ class pyEZmock:
     cosmo = flatLCDM(omega_m = params['omega_m'])
     z1 = 1 + params['redshift']
     a = 1. / z1
-    grow2z0 = cosmo.growth2z0(a)
+    a_init = 1. / (1 + params['z_init'])
+    grow2z0 = cosmo.growth2(a, a_init=a_init)
     hubble = cosmo.hubble(a)
     zdist = cosmo.growthf(a) * hubble * a
 
