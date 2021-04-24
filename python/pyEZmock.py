@@ -911,27 +911,27 @@ class pyEZmock:
         if self._pkconf['rspace']:
           ofile = f'{odir}/PK_EZmock_{bname}.dat'
           if pkconf != self._pkconf or not os.path.isfile(ofile):
-            jobstr += self._pk_cmd(rsd=False)
+            jobstr += self._pk_cmd(bname=bname, rsd=False)
         if self._pkconf['zspace']:
           ofile = f'{odir}/PK_EZmock_{bname}_RSD.dat'
           if pkconf != self._pkconf or not os.path.isfile(ofile):
-            jobstr += self._pk_cmd(rsd=True)
+            jobstr += self._pk_cmd(bname=bname, rsd=True)
         if self._xiconf['rspace']:
           ofile = f'{odir}/2PCF_EZmock_{bname}.dat'
           if xiconf != self._xiconf or not os.path.isfile(ofile):
-            jobstr += self._xi_cmd(rsd=False)
+            jobstr += self._xi_cmd(bname=bname, rsd=False)
         if self._xiconf['zspace']:
           ofile = f'{odir}/2PCF_EZmock_{bname}_RSD.dat'
           if xiconf != self._xiconf or not os.path.isfile(ofile):
-            jobstr += self._xi_cmd(rsd=True)
+            jobstr += self._xi_cmd(bname=bname, rsd=True)
         if self._bkconf['rspace']:
           ofile = f'{odir}/BK_EZmock_{bname}.dat'
           if bkconf != self._bkconf or not os.path.isfile(ofile):
-            jobstr += self._bk_cmd(rsd=False)
+            jobstr += self._bk_cmd(bname=bname, rsd=False)
         if self._bkconf['zspace']:
           ofile = f'{odir}/BK_EZmock_{bname}_RSD.dat'
           if bkconf != self._bkconf or not os.path.isfile(ofile):
-            jobstr += self._bk_cmd(rsd=True)
+            jobstr += self._bk_cmd(bname=bname, rsd=True)
 
       jobstr += f'echo 1 > {self._done}\n'
 
