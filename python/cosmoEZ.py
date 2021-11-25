@@ -34,8 +34,9 @@ from scipy.misc import derivative
 # Structure growth for flat LambdaCDM cosmology.
 # ref: https://arxiv.org/abs/0906.1643
 class flatLCDM:
-  def __init__(self, omega_m=0.31):
+  def __init__(self, omega_m=0.31, omega_nu=0):
     self.Om = float(omega_m)
+    self.Omn = self.Om + float(omega_nu)
 
   def delta(self, a):
     return a * hyp2f1(1./3., 1, 11./6., a**3 * (1-1./self.Om))
@@ -48,4 +49,4 @@ class flatLCDM:
     return a * derv / self.delta(a)
 
   def hubble(self, a):
-    return 100 * np.sqrt(1 - self.Om + self.Om / a**3)
+    return 100 * np.sqrt(1 - self.Omn + self.Omn / a**3)

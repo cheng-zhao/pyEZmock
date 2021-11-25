@@ -81,6 +81,7 @@ class pyEZmock:
       dens_cut = None,
       seed = 1,
       omega_m = None,
+      omega_nu = None,
       z_init = 0,
       init_pk = None
     )
@@ -148,7 +149,7 @@ class pyEZmock:
 
   def set_param(self, boxsize, num_grid, redshift, num_tracer,
       pdf_base=None, dens_scat=None, rand_motion=None, dens_cut=None,
-      seed=1, omega_m=0.307115, z_init=0,
+      seed=1, omega_m=0.307115, omega_nu=0, z_init=0,
       init_pk='/global/u2/z/zhaoc/work/pyEZmock/data/PlanckDM.linear.pk'):
     """
     Set parameters for EZmock evaluation.
@@ -174,7 +175,9 @@ class pyEZmock:
     seed: int, optional
         Random seed.
     omega_m: float, optional
-        Density parameter at z = 0.
+        Density parameter for matter (Omega_b + Omega_cdm) at z = 0.
+    omega_nu: float, optional
+        Density parameter for neutrino at z = 0.
     z_init: float, optional
         Redshift of the initial power spectrum.
     init_pk: str, optional
@@ -201,6 +204,9 @@ class pyEZmock:
     self._param['omega_m'] = float(omega_m)
     if self._param['omega_m'] <= 0 or self._param['omega_m'] > 1:
       raise ValueError('`omega_m` must be between 0 and 1')
+    self._param['omega_nu'] = float(omega_nu)
+    if self._param['omega_nu'] < 0 or self._param['omega_nu'] > 1:
+      raise ValueError('`omega_nu` must be between 0 and 1')
     self._param['z_init'] = float(z_init)
     if self._param['z_init'] < 0:
       raise ValueError('`z_init` must be non-negative')
@@ -395,7 +401,7 @@ class pyEZmock:
   def run(self, nthreads, queue=None, walltime=30, partition='haswell',
       boxsize=None, num_grid=None, redshift=None, num_tracer=None,
       pdf_base=None, dens_scat=None, rand_motion=None, dens_cut=None,
-      seed=None, omega_m=None, z_init=None, init_pk=None):
+      seed=None, omega_m=None, omega_nu=None, z_init=None, init_pk=None):
     """
     Run the job for EZmock generation and clustering measurements.
 
@@ -442,6 +448,10 @@ class pyEZmock:
       self._param['omega_m'] = float(omega_m)
       if self._param['omega_m'] <= 0 or self._param['omega_m'] > 1:
         raise ValueError('`omega_m` must be between 0 and 1')
+    if omega_nu is not None:
+      self._param['omega_nu'] = float(omega_nu)
+      if self._param['omega_nu'] < 0 or self._param['omega_nu'] > 1:
+        raise ValueError('`omega_nu` must be between 0 and 1')
     if z_init is not None:
       self._param['z_init'] = float(z_init)
       if self._param['z_init'] < 0:
@@ -1138,7 +1148,7 @@ class pyEZmock:
     jobstr = ''
 
     # Compute structure growth parameters
-    cosmo = flatLCDM(omega_m = params['omega_m'])
+    cosmo = flatLCDM(omega_m=params['omega_m'], omega_nu=params['omega_nu'])
     z1 = 1 + params['redshift']
     a = 1. / z1
     a_init = 1. / (1 + params['z_init'])
